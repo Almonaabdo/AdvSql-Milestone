@@ -1,0 +1,142 @@
+﻿<Window x:Class="ConfigTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="ConfigTool:A_03"
+        mc:Ignorable="d"
+        Title="A-03 Programming Abstractions"
+        Height="650"
+        Width="1020"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E2F"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#0078D7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="8"
+                        Padding="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10,-14,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <TextBlock Text="A-03 Programming Abstractions"
+               FontSize="18"
+               FontWeight="Bold"
+               Foreground="White"
+               HorizontalAlignment="Center"
+               Margin="0,20,0,0"
+               Grid.Row="0"/>
+
+        <DataGrid x:Name="sourceGrid"
+              AutoGenerateColumns="True"
+              IsReadOnly="True"
+              Margin="0,32,10,10"
+              Grid.Row="2"/>
+
+
+
+        <Button x:Name="btnStartTransfer"
+            Content="Start Transfer"
+            Click="Btn_Start_Transfer_Click"
+            Margin="0,12,0,9"
+            HorizontalAlignment="Center"
+            Grid.Row="1"/>
+
+
+        <!-- SOURCE Side -->
+        <TextBox x:Name="SourceDatabaseTextBox" Height="20" Width="100" Margin="120,27,770,30" Grid.Row="1"></TextBox>
+        <TextBox x:Name="SourceTableTextBox" Height="20" Width="100" Margin="120,54,770,4" Grid.Row="1"/>
+        <TextBox x:Name="SourceServerTextBox" Height="20" Width="100" Margin="120,2,770,56" Grid.Row="1"/>
+
+        <TextBlock Text="Source Database: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="0,28,0,34" Width="130" Grid.Row="1"/>
+        <TextBlock Text="Source Table: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="0,54,0,499"
+            Grid.Row="1" Width="130" Grid.RowSpan="2"/>
+        <TextBlock Text="Source Server: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="0,3,0,26" Width="130" Grid.Row="1"/>
+
+        <Button x:Name="btnStartTransfer_Copy"
+            Content="View"
+            Click="Btn_Test_Source_Db"
+            Margin="235,7,0,14"
+            HorizontalAlignment="Left"
+            Grid.Row="1" Width="85"/>
+
+        <!-- DEST Side -->
+        <TextBox x:Name="DestDatabaseTextBox" Height="20" Width="100" Margin="777,28,113,30" Grid.Row="1"/>
+        <TextBox x:Name="DestTableTextBox" Height="20" Width="100" Margin="777,53,113,5" Grid.Row="1" RenderTransformOrigin="0.53,1.75"/>
+        <TextBox x:Name="DestServerTextBox" Width="100" Margin="777,1,113,55" Grid.Row="1"/>
+        <TextBlock Text="Destination Database: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="642,27,0,22"
+            Grid.Row="1" Width="130"/>
+        <TextBlock Text="Destination Table: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="642,51,0,499"
+            Grid.Row="1" Width="130" RenderTransformOrigin="0.513,-0.062" Grid.RowSpan="2"/>
+
+        <Button x:Name="btnStartTransferr"
+            Content="View"
+            Click="Btn_Test_Dest_Db"
+            Margin="900,8,0,15"
+            HorizontalAlignment="Left"
+            Grid.Row="1" Width="84"/>
+        <TextBlock Text="Destination Server: "
+            FontSize="12"
+            FontWeight="Bold"
+            Foreground="White"
+            HorizontalAlignment="Left"
+            Margin="642,3,0,50" Width="130" Grid.Row="1"/>
+
+
+    </Grid>
+</Window>

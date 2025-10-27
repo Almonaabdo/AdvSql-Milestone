@@ -1,0 +1,113 @@
+# =========================
+# Visual Studio / .NET WPF
+# =========================
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]uild/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio auto-generated files
+.vs/
+.vscode/
+*.VC.db
+*.VC.VC.opendb
+*.pdb
+*.cache
+*.dbmdl
+*.dbproj.schemaview
+*.ipch/
+*.opendb
+*.tlog
+*.log
+*.lastbuildstate
+*.tlog
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+packages/
+*.dll
+*.exe
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+*.coverage
+*.coveragexml
+
+# Roslyn cache directories
+*.ide/
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.tmp_proj
+*.log
+*.tlog
+*.vssscc
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Windows image cache
+Thumbs.db
+ehthumbs.db
+
+# WPF build artifacts
+*.g.*
+*.baml
+*.xsd
+obj/
+bin/
+Generated_Code/
+
+# Publish
+publish/
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+*.azurePubxml
+*.PublishProfiles/
+*.publishproj
+
+
+
+
+
+# Package restore
+*.nuget/
+.nuget/
+packages/
+
+# Temporary files
+*.tmp
+~$*
+*.temp
+*.tmp
+*.bak
+*.old
+*.orig
