@@ -11,8 +11,8 @@ namespace ConfigTool
 {
     public partial class MainWindow : Window
     {
-        private string sourceConnectionString = "Data Source=NULL;Initial Catalog=NULL;Integrated Security=True;TrustServerCertificate=True;";
-        private string destConnectionString = "Data Source=NULL;Initial Catalog=NULL;Integrated Security=True;TrustServerCertificate=True;";
+        private string sourceConnectionString = "Data Source=104.198.160.37;Initial Catalog=advsql-milestone;User ID=sqlserver;Password=1Milestone@;TrustServerCertificate=True;";
+    
 
         // Binding properties to the front-end
         private string _sourceDatabase;
@@ -102,7 +102,7 @@ namespace ConfigTool
             }
             else
             {
-                Perform_table_copy();
+                Console.WriteLine("temp");
             }
         }
 
@@ -160,10 +160,14 @@ namespace ConfigTool
 
         private void Btn_Test_Source_Db(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(SourceDatabase) || string.IsNullOrEmpty(SourceServer))
-            {
-                MessageBox.Show("Source Database information is Empty.", "Error!");
-            }
+            //if (string.IsNullOrEmpty(SourceDatabase) || string.IsNullOrEmpty(SourceServer))
+            //{
+            //    MessageBox.Show("Source Database information is Empty.", "Error!");
+            //}
+            //else
+            //{
+                LoadDatabaseTables(0, sourceConnectionString);
+            //}
         }
 
         ////////////////////////////////////////////////////////////////////////////////////
@@ -174,7 +178,6 @@ namespace ConfigTool
         private void DestDatabaseTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             DestDatabase = DestDatabaseTextBox.Text;
-            destConnectionString = "Data Source=" + SourceServer + ";Initial Catalog=" + DestDatabase + ";Integrated Security=True;TrustServerCertificate=True;";
         }
         private void DestTableTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -183,7 +186,6 @@ namespace ConfigTool
         private void DestServerTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             DestServer = DestServerTextBox.Text;
-            destConnectionString = "Data Source=" + DestServer + ";Initial Catalog=" + DestDatabase + ";Integrated Security=True;TrustServerCertificate=True;";
         }
 
         private void Btn_Test_Dest_Db(object sender, RoutedEventArgs e)
@@ -194,87 +196,11 @@ namespace ConfigTool
             }
             else
             {
-                LoadDatabaseTables(1, destConnectionString);
+                //LoadDatabaseTables(1, destConnectionString);
+                Console.WriteLine("temp");
             }
         }
-
-        // function to copy data from source to dest and calls to create new table if didnt alr exist
-        private void Perform_table_copy()
-        {
-            if (string.IsNullOrEmpty(SourceTable) || string.IsNullOrEmpty(DestTable))
-            {
-                MessageBox.Show("Source or destination table is empty.", "Error");
-                return;
-            }
-
-            try
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-
-                using (SqlConnection sourceConnection = new SqlConnection(sourceConnectionString))
-                {
-                    sourceConnection.Open();
-
-                    string query = $"SELECT * FROM {SourceTable}";
-
-                    using (SqlCommand commandSourceData = new SqlCommand(query, sourceConnection))
-                    using (SqlDataReader reader = commandSourceData.ExecuteReader(CommandBehavior.SchemaOnly))
-                    using (SqlConnection destinationConnection = new SqlConnection(destConnectionString))
-                    {
-                        destinationConnection.Open();
-
-                        // check if dest table exists
-                        bool destExists = false;
-                        string checkQuery = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{DestTable}'";
-                        using (SqlCommand checkCmd = new SqlCommand(checkQuery, destinationConnection))
-                        {
-                            destExists = (int)checkCmd.ExecuteScalar() > 0;
-                        }
-
-                        // create using copied source schema
-                        if (!destExists)
-                        {
-                            DataTable schemaTable = reader.GetSchemaTable();
-                            string createSql = createTable(DestTable, schemaTable);
-
-                            using (SqlCommand createCmd = new SqlCommand(createSql, destinationConnection))
-                            {
-                                createCmd.ExecuteNonQuery();
-                            }
-
-                            MessageBox.Show($"Destination table '{DestTable}' did not exist and was created successfully.", "Info");
-                        }
-
-                        reader.Close();
-                        commandSourceData.CommandText = query;
-                        // copy data into new table
-                        using (SqlDataReader dataReader = commandSourceData.ExecuteReader())
-                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(destinationConnection))
-                        {
-                            bulkCopy.DestinationTableName = DestTable;
-
-                            try
-                            {
-                                bulkCopy.WriteToServer(dataReader);
-                                MessageBox.Show("Data copy completed successfully!", "Success");
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Error during bulk copy: {ex.Message}", "Error");
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}", "Error");
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
+  
 
         // convert C# types to SQL
         private string GetSqlTypeFromType(Type type, int size)
