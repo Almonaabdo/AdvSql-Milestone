@@ -49,7 +49,7 @@
         </Grid.RowDefinitions>
 
 
-        <TextBlock Text="A-03 Programming Abstractions"
+        <TextBlock Text="M-01 Config Tool"
                FontSize="18"
                FontWeight="Bold"
                Foreground="White"
@@ -106,9 +106,6 @@
             Grid.Row="1" Width="85"/>
 
         <!-- DEST Side -->
-        <TextBox x:Name="DestDatabaseTextBox" Height="20" Width="100" Margin="777,28,113,30" Grid.Row="1"/>
-        <TextBox x:Name="DestTableTextBox" Height="20" Width="100" Margin="777,53,113,5" Grid.Row="1" RenderTransformOrigin="0.53,1.75"/>
-        <TextBox x:Name="DestServerTextBox" Width="100" Margin="777,1,113,55" Grid.Row="1"/>
         <TextBlock Text="Destination Database: "
             FontSize="12"
             FontWeight="Bold"
@@ -124,12 +121,6 @@
             Margin="642,51,0,499"
             Grid.Row="1" Width="130" RenderTransformOrigin="0.513,-0.062" Grid.RowSpan="2"/>
 
-       <!-- <Button x:Name="btnStartTransferr"
-            Content="View"
-            Click="Btn_Test_Dest_Db"
-            Margin="900,8,0,15"
-            HorizontalAlignment="Left"
-            Grid.Row="1" Width="84"/> -->
         <TextBlock Text="Destination Server: "
             FontSize="12"
             FontWeight="Bold"

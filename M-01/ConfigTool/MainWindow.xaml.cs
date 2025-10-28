@@ -35,34 +35,6 @@ namespace ConfigTool
             }
         }
 
-        private string _destDatabase;
-        public string DestDatabase
-        {
-            get => _destDatabase;
-            set
-            {
-                _destDatabase = value;
-            }
-        }
-
-        private string _destTable;
-        public string DestTable
-        {
-            get => _destTable;
-            set
-            {
-                _destTable = value;
-            }
-        }
-        private string _destServer;
-        public string DestServer
-        {
-            get => _destServer;
-            set
-            {
-                _destServer = value;
-            }
-        }
         private string _sourceServer;
         public string SourceServer
         {
@@ -81,10 +53,9 @@ namespace ConfigTool
             // bind textInput change to methods
             SourceDatabaseTextBox.TextChanged += SourceDatabaseTextBox_TextChanged;
             SourceTableTextBox.TextChanged += SourceTableTextBox_TextChanged;
-            DestDatabaseTextBox.TextChanged += DestDatabaseTextBox_TextChanged;
-            DestTableTextBox.TextChanged += DestTableTextBox_TextChanged;
             SourceServerTextBox.TextChanged += SourceServerTextBox_TextChanged;
-            DestServerTextBox.TextChanged += DestServerTextBox_TextChanged;
+
+            LoadTable("temp table name", sourceConnectionString);
         }
 
 
@@ -93,10 +64,7 @@ namespace ConfigTool
         {
             if (string.IsNullOrEmpty(SourceServer) ||
                 string.IsNullOrEmpty(SourceDatabase) ||
-                string.IsNullOrEmpty(SourceTable) ||
-                string.IsNullOrEmpty(DestServer) ||
-                string.IsNullOrEmpty(DestDatabase) ||
-                string.IsNullOrEmpty(DestTable))
+                string.IsNullOrEmpty(SourceTable))
             {
                 MessageBox.Show("Please fill in all server, database, and table fields for Source and Dest.\nNote: Enter new table name in Destination if doesn't already exist!", "Error");
             }
@@ -142,6 +110,36 @@ namespace ConfigTool
             }
         }
 
+        private void LoadTable(string tableName, string connectionString)
+        {
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // Get all table names in the database
+                    string query = @"SELECT * FROM APP_CONFIG;";
+
+                    Microsoft.Data.SqlClient.SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    // Bind to DataGrid
+                    sourceGrid.ItemsSource = dt.DefaultView;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
         // SOURCE DATABASE
         private void SourceDatabaseTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -166,93 +164,8 @@ namespace ConfigTool
             //}
             //else
             //{
-                LoadDatabaseTables(0, sourceConnectionString);
+                LoadTable("temp table name", sourceConnectionString);
             //}
         }
-
-        ////////////////////////////////////////////////////////////////////////////////////
-
-
-
-        // DEST DATABASE
-        private void DestDatabaseTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            DestDatabase = DestDatabaseTextBox.Text;
-        }
-        private void DestTableTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            DestTable = DestTableTextBox.Text;
-        }
-        private void DestServerTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            DestServer = DestServerTextBox.Text;
-        }
-
-        private void Btn_Test_Dest_Db(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(DestDatabase) || string.IsNullOrEmpty(DestServer))
-            {
-                MessageBox.Show("Dest Database information is Empty.", "Error!");
-            }
-            else
-            {
-                //LoadDatabaseTables(1, destConnectionString);
-                Console.WriteLine("temp");
-            }
-        }
-  
-
-        // convert C# types to SQL
-        private string GetSqlTypeFromType(Type type, int size)
-        {
-            if (type == typeof(string))
-                return size > 0 && size < 4000 ? $"NVARCHAR({size})" : "NVARCHAR(MAX)";
-            if (type == typeof(int))
-                return "INT";
-            if (type == typeof(long))
-                return "BIGINT";
-            if (type == typeof(short))
-                return "SMALLINT";
-            if (type == typeof(bool))
-                return "BIT";
-            if (type == typeof(DateTime))
-                return "DATETIME";
-            if (type == typeof(decimal))
-                return "DECIMAL(18,2)";
-            if (type == typeof(double))
-                return "FLOAT";
-            if (type == typeof(byte[]))
-                return "VARBINARY(MAX)";
-
-            return "NVARCHAR(MAX)";
-        }
-
-        // function to create table in dest database if table didnt already exist
-        private string createTable(string tableName, DataTable schemaTable)
-        {
-            StringBuilder sql = new StringBuilder();
-            sql.AppendLine($"CREATE TABLE [{tableName}] (");
-
-            for (int i = 0; i < schemaTable.Rows.Count; i++)
-            {
-                DataRow row = schemaTable.Rows[i];
-                string columnName = row["ColumnName"].ToString();
-                Type dataType = (Type)row["DataType"];
-                int columnSize = row["ColumnSize"] != DBNull.Value ? Convert.ToInt32(row["ColumnSize"]) : 0;
-                bool allowDBNull = row["AllowDBNull"] != DBNull.Value && (bool)row["AllowDBNull"];
-
-                string sqlType = GetSqlTypeFromType(dataType, columnSize);
-                string nullSpec = allowDBNull ? "NULL" : "NOT NULL";
-
-                sql.Append($"[{columnName}] {sqlType} {nullSpec}");
-                if (i < schemaTable.Rows.Count - 1)
-                    sql.Append(",");
-                sql.AppendLine();
-            }
-
-            sql.AppendLine(");");
-            return sql.ToString();
-        }
-
     }
 }
