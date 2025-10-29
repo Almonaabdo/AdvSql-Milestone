@@ -40,7 +40,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="10,-14,0,0">
+    <Grid Margin="0,-14,0,-6">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -59,75 +59,21 @@
 
         <DataGrid x:Name="sourceGrid"
               AutoGenerateColumns="True"
-              IsReadOnly="True"
-              Margin="0,32,10,10"
+              IsReadOnly="False"
+              Margin="0,89,10,10"
               Grid.Row="2"/>
 
-
-
-        <!--<Button x:Name="btnStartTransfer"
-            Content="Start Transfer"
-            Click="Btn_Start_Transfer_Click"
-            Margin="0,12,0,9"
-            HorizontalAlignment="Center"
-            Grid.Row="1"/>-->
-
-
-        <!-- SOURCE Side -->
-        <TextBox x:Name="SourceDatabaseTextBox" Height="20" Width="100" Margin="120,27,770,30" Grid.Row="1"></TextBox>
-        <TextBox x:Name="SourceTableTextBox" Height="20" Width="100" Margin="120,54,770,4" Grid.Row="1"/>
-        <TextBox x:Name="SourceServerTextBox" Height="20" Width="100" Margin="120,2,770,56" Grid.Row="1"/>
-
-        <TextBlock Text="Source Database: "
-            FontSize="12"
+        <TextBlock Text="Configure System Settings"
+            FontSize="18"
             FontWeight="Bold"
             Foreground="White"
             HorizontalAlignment="Left"
-            Margin="0,28,0,34" Width="130" Grid.Row="1"/>
-        <TextBlock Text="Source Table: "
-            FontSize="12"
-            FontWeight="Bold"
-            Foreground="White"
-            HorizontalAlignment="Left"
-            Margin="0,54,0,499"
-            Grid.Row="1" Width="130" Grid.RowSpan="2"/>
-        <TextBlock Text="Source Server: "
-            FontSize="12"
-            FontWeight="Bold"
-            Foreground="White"
-            HorizontalAlignment="Left"
-            Margin="0,3,0,26" Width="130" Grid.Row="1"/>
-
-        <Button x:Name="btnStartTransfer_Copy"
-            Content="View"
-            Click="Btn_Test_Source_Db"
-            Margin="235,7,0,14"
-            HorizontalAlignment="Left"
-            Grid.Row="1" Width="85"/>
-
-        <!-- DEST Side -->
-        <TextBlock Text="Destination Database: "
-            FontSize="12"
-            FontWeight="Bold"
-            Foreground="White"
-            HorizontalAlignment="Left"
-            Margin="642,27,0,22"
-            Grid.Row="1" Width="130"/>
-        <TextBlock Text="Destination Table: "
-            FontSize="12"
-            FontWeight="Bold"
-            Foreground="White"
-            HorizontalAlignment="Left"
-            Margin="642,51,0,499"
-            Grid.Row="1" Width="130" RenderTransformOrigin="0.513,-0.062" Grid.RowSpan="2"/>
-
-        <TextBlock Text="Destination Server: "
-            FontSize="12"
-            FontWeight="Bold"
-            Foreground="White"
-            HorizontalAlignment="Left"
-            Margin="642,3,0,50" Width="130" Grid.Row="1"/>
+            Margin="394,60,0,0"
+            Grid.Row="2" Height="24" VerticalAlignment="Top"/>
 
 
     </Grid>
 </Window>
+
+    
+    
