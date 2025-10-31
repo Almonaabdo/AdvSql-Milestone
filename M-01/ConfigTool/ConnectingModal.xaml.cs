@@ -5,31 +5,18 @@
  * Refrence : https://learn.microsoft.com/en-us/dotnet/desktop/wpf/windows/dialog-boxes-overview
  */
 
-using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
-using SqlDataAdapter = Microsoft.Data.SqlClient.SqlDataAdapter;
+using Microsoft.Data.SqlClient;
 
 namespace ConfigTool
 {
     public partial class ConnectingModal : Window
     {
 
-        private string connectionString;
+        private string? connectionString;
         public string ConnectionStatus { get; private set; }
 
         private string _sourceServer;
@@ -84,9 +71,6 @@ namespace ConfigTool
             // Disable the x close button
             this.Closing += Modal_Closing;
 
-
-
-
             // bind textInput change to methods
             SourceServerTextBox.TextChanged += SourceServerTextBox_TextChanged;
             SourceDatabaseTextBox.TextChanged += SourceDatabaseTextBox_TextChanged;
@@ -121,7 +105,7 @@ namespace ConfigTool
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message  , "Error");
+                    MessageBox.Show(ex.Message  , "Warning");
                     Mouse.OverrideCursor = null;
                 }
             }

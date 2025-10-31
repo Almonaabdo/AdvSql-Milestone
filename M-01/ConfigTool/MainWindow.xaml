@@ -6,7 +6,7 @@
         xmlns:local="ConfigTool:A_03"
         mc:Ignorable="d"
         Title="A-03 Programming Abstractions"
-        Height="650"
+        Height="609"
         Width="1020"
         WindowStartupLocation="CenterScreen"
         Background="#FF1E1E2F"
@@ -14,27 +14,29 @@
         SnapsToDevicePixels="True">
 
     <Window.Resources>
-        <Style TargetType="Button">
+        <!-- Primary button style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#0078D7"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="BorderBrush" Value="#DDDDDD" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#DDDDDD" />
+            <Setter Property="VerticalGridLinesBrush" Value="#DDDDDD" />
+
+            <Setter Property="RowStyle">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="8"
-                        Padding="10">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
+                                <Setter Property="Background" Value="LightCyan" />
                             </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
+                        </Style.Triggers>
+                    </Style>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -57,10 +59,12 @@
                Margin="0,20,0,0"
                Grid.Row="0"/>
 
-        <DataGrid x:Name="sourceGrid"
+        <DataGrid x:Name="configGrid"
               AutoGenerateColumns="True"
               IsReadOnly="False"
-              Margin="0,89,10,10"
+              Margin="0,89,10,186"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
               Grid.Row="2"/>
 
         <TextBlock Text="Configure System Settings"
@@ -71,6 +75,8 @@
             Margin="394,60,0,0"
             Grid.Row="2" Height="24" VerticalAlignment="Top"/>
 
+
+        <Button Content="Apply" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="859,476,0,0" Grid.Row="2" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="ApplyButton_Click"/>
 
     </Grid>
 </Window>

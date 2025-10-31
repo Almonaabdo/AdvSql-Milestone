@@ -72,7 +72,7 @@
         <Label Grid.Column="0" Grid.Row="2">Login:</Label>
         <TextBox Name="SourceLoginTextBox" Grid.Column="1" Grid.Row="2"/>
 
-        <Label Grid.Column="0" Grid.Row="3">Passwrd:</Label>
+        <Label Grid.Column="0" Grid.Row="3">Password:</Label>
         <PasswordBox Height="22" Name="SourcePasswordTextBox" Grid.Column="1" Grid.Row="3" />
 
         <Label Grid.Column="0" Grid.Row="4">Trust Server Certificate:</Label>
