@@ -1,7 +1,7 @@
 ﻿/*
  * File : MainWindow.xaml.cs
  * Developers: Abdurrahman Almouna, Yafet Tekleab
- * Overview: Main window of the applications. Allows user to configure the system's settings by altering the config table on the SQL database.
+ * Overview: Main window of the applications. Allows user to configure the system's settings by altering the config table hosted the SQL server database.
  */
 
 
@@ -9,6 +9,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using SqlDataAdapter = Microsoft.Data.SqlClient.SqlDataAdapter;
 
@@ -18,13 +19,12 @@ namespace ConfigTool
     {
 
         private string? connectionString;
-        private SqlDataAdapter _adapter = new SqlDataAdapter();
+        private SqlDataAdapter adapter = new SqlDataAdapter();
         private DataTable dataTable = new DataTable();
-
         public MainWindow()
         {
             InitializeComponent();
-
+            // load the connecting to server pop up window
             Loaded += (s, e) =>
             {
                 // make the modal a child of MainWindow
@@ -59,8 +59,8 @@ namespace ConfigTool
                 // get table data
                 string query = @"SELECT * FROM " + tableName + ";";
 
-                _adapter = new SqlDataAdapter(query, conn);
-                _adapter.Fill(dataTable);
+                adapter = new SqlDataAdapter(query, conn);
+                adapter.Fill(dataTable);
 
                 // bind data to UI grid
                 configGrid.ItemsSource = dataTable.DefaultView;
@@ -79,16 +79,32 @@ namespace ConfigTool
         /*
         * Name: void ApplyButton_Click()
         * Called when the Apply button is clicked on the UI
-        * It refers to the update SQL command and invokes the adapter to that edited field on the UI are committed to the database
+        * It refers to the update SQL command and invokes the adapter update method sp that edited field on the UI are committed to the database
         */
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                _adapter.UpdateCommand = new SqlCommandBuilder(_adapter).GetUpdateCommand();
-                _adapter.Update(dataTable);
-                MessageBox.Show("Changes have been applied", "Success");
+
+                // check if grid has validation errors
+                var errors = (from c in
+                  (from object i in configGrid.ItemsSource
+                   select configGrid.ItemContainerGenerator.ContainerFromItem(i))
+                   where c != null
+                   select Validation.GetHasError(c))
+                .FirstOrDefault(x => x);
+
+                if (errors)
+                {
+                    MessageBox.Show("One of the values is invalid", "Warning");
+                }
+                else
+                {
+                    adapter.UpdateCommand = new SqlCommandBuilder(adapter).GetUpdateCommand();
+                    adapter.Update(dataTable);
+                    MessageBox.Show("Changes have been applied", "Success");
+                }     
             }
             catch (Exception ex)
             {

@@ -85,6 +85,11 @@ namespace ConfigTool
 
         private bool _allowClose = false;
 
+
+        /*
+        * Name: ConnectButton_Click()
+        * tests connecting to a server with the provided user information using ADO.NET SqlConnection libraries
+        */
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(SourceServer) || string.IsNullOrEmpty(SourceDatabase) || string.IsNullOrEmpty(SourceLogin) || string.IsNullOrEmpty(SourcePassword))
@@ -118,6 +123,10 @@ namespace ConfigTool
         }
 
 
+        /*
+        * Name: Modal_Closing()
+        * Overriden version of the Modal_Closing method to prevent user from accessing MainWindow without properlly connecting to a server first 
+        */
         private void Modal_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {  
             if (!_allowClose)
@@ -125,9 +134,7 @@ namespace ConfigTool
                 e.Cancel = true;
             }
         }
-
-
-
+        
         private void SourceServerTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             SourceServer = SourceServerTextBox.Text;
