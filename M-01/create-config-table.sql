@@ -5,9 +5,6 @@
 -- Overview: This file creates the config table and inserts the initial values
 -- ==========================================
 
-USE [advsql-milestone];
-GO
-
 IF OBJECT_ID('dbo.APP_CONFIG','U')          IS NOT NULL DROP TABLE dbo.APP_CONFIG;
 GO
 
@@ -22,9 +19,6 @@ CREATE TABLE dbo.APP_CONFIG
   CONSTRAINT CK_CFG_Type CHECK (configType IN ('System','Part')),
   CONSTRAINT UQ_CFG_Key  UNIQUE (configType, configDescription)
 );
-GO
-
-USE [advsql-milestone];
 GO
 
 ;MERGE dbo.APP_CONFIG AS tgt
