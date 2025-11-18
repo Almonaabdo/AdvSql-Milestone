@@ -13,7 +13,7 @@ namespace WorkStation
     public partial class MainWindow : Window
     {
         private string CurrentSkill() => (SkillBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Experienced";
-        private string connectionString = "Data Source=localhost;Initial Catalog=advsql-milestone-2;Integrated Security=True;TrustServerCertificate=True;";
+        string connectionString = ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
 
 
         private const double BaseSec = 60.0;  // experienced baseline
