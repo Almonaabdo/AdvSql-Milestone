@@ -1,5 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +26,9 @@ namespace WorkStation
         private DataTable dataTable = new DataTable();
         private string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
         SqlConnection connection = new SqlConnection();
+
+        private string CurrentSkill() => (SkillBox.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "Experienced";
+
         public MainWindow()
         {
             InitializeComponent();
@@ -133,6 +138,38 @@ namespace WorkStation
                 callProcedure("DecrementPartCount", i, i, parts[i]);
 
                 await Task.Delay(5000);
+            }
+        }
+
+        private async Task<int> StationForThisInstance()
+        {
+            var cs = ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
+
+            using var conn = new SqlConnection(cs);
+            using var cmd = new SqlCommand("dbo.usp_CreateStationWithBins", conn)
+            { CommandType = CommandType.StoredProcedure };
+
+            await conn.OpenAsync();
+            using var r = await cmd.ExecuteReaderAsync();
+            if (!await r.ReadAsync()) throw new InvalidOperationException("No station returned.");
+
+            int stationId = r.GetInt32(0);
+            string code = r.GetString(1);
+
+            StationIdBox.Text = stationId.ToString();
+            LogList.Items.Insert(0, $"Auto-created {code} (ID {stationId}) and seeded bins.");
+            return stationId;
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await StationForThisInstance();
+            }
+            catch (Exception ex)
+            {
+                LogList.Items.Insert(0, "DB ERROR (auto-station on load): " + ex.Message);
             }
         }
     }
