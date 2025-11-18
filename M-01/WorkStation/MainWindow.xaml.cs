@@ -5,14 +5,15 @@ using System.Data;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Data.SqlClient;    
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
+using Microsoft.Data.SqlClient;
 
 namespace WorkStation
 {
     public partial class MainWindow : Window
     {
         private string CurrentSkill() => (SkillBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Experienced";
-        string connectionString = ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
+        private string connectionString = "Data Source=localhost;Initial Catalog=advsql-milestone-2;Integrated Security=True;TrustServerCertificate=True;";
 
 
         private const double BaseSec = 60.0;  // experienced baseline
@@ -44,7 +45,7 @@ namespace WorkStation
         // Compute a single simulated cycle time (seconds)
         private double calcSimulationCycle(string skill)
         {
-            double jitter = (new Random().NextDouble() * 2 - 1) * (Jitter / 100.0); 
+            double jitter = (new Random().NextDouble() * 2 - 1) * (Jitter / 100.0);
             return BaseSec * SkillFactor(skill) * (1.0 + jitter);
         }
 
@@ -88,7 +89,7 @@ namespace WorkStation
             using var conn = new SqlConnection(connectionString);
             await conn.OpenAsync();
 
-            using var tx = conn.BeginTransaction();  
+            using var tx = conn.BeginTransaction();
 
             try
             {
@@ -181,6 +182,6 @@ namespace WorkStation
                 LogList.Items.Insert(0, "DB ERROR (Start): " + ex.Message);
             }
         }
-     
+
     }
 }

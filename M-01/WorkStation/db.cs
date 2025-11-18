@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using Dapper;
-using System.Configuration; 
-
+using System.Configuration;
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
+using Microsoft.Data.SqlClient;
 namespace WorkStation;
 
 public static class Db

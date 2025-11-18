@@ -46,6 +46,6 @@
             <ListBox x:Name="LogList"/>
         </GroupBox>
 
-       
+
     </Grid>
 </Window>
