@@ -59,6 +59,16 @@ namespace ConfigTool
             }
         }
 
+        private string _localDatabase;
+        public string LocalDatabase
+        {
+            get => _localDatabase;
+            set
+            {
+                _localDatabase = value;
+            }
+        }
+
         private string trustedCertificateValue = "True";
 
 
@@ -66,7 +76,9 @@ namespace ConfigTool
         public ConnectingModal()
         {
             InitializeComponent();
-            if (DesignerProperties.GetIsInDesignMode(this)) return; 
+            if (DesignerProperties.GetIsInDesignMode(this)) return;
+
+            this.Loaded += ConnectingModal_Loaded;
 
             // Disable the x close button
             this.Closing += Modal_Closing;
@@ -79,9 +91,19 @@ namespace ConfigTool
             trustCertificateCheckbox.Checked += TrustCertificate_Checked;
             trustCertificateCheckbox.Unchecked += TrustCertificate_Unchecked;
             trustedCertificateValue = trustCertificateCheckbox.IsChecked == true ? "True" : "False";
+            sourseDatabase.TextChanged += sourseDatabase_TextChanged;
         }
 
+        private void ConnectingModal_Loaded(object sender, RoutedEventArgs e)
+        {
+            sqlAuthPanel.Visibility = sqlAuth.IsChecked == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
+            windwosAuthPanel.Visibility = windowsAuth.IsChecked == true
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        }
 
         private bool _allowClose = false;
 
@@ -92,10 +114,13 @@ namespace ConfigTool
         */
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(SourceServer) || string.IsNullOrEmpty(SourceDatabase) || string.IsNullOrEmpty(SourceLogin) || string.IsNullOrEmpty(SourcePassword))
+            if(sqlAuth.IsChecked == true)
             {
-                MessageBox.Show("Please fill in all fields", "Error");
-                return;
+                if (string.IsNullOrEmpty(SourceServer) || string.IsNullOrEmpty(SourceDatabase) || string.IsNullOrEmpty(SourceLogin) || string.IsNullOrEmpty(SourcePassword))
+                {
+                    MessageBox.Show("Please fill in all fields", "Error");
+                    return;
+                }
             }
             using (var connection = new SqlConnection(connectionString))
             {
@@ -166,6 +191,24 @@ namespace ConfigTool
         {
             trustedCertificateValue = "False";
             connectionString = "Data Source=" + SourceServer + ";Initial Catalog=" + SourceDatabase + ";User ID=" + SourceLogin + ";Password=" + SourcePassword + ";TrustServerCertificate=" + trustedCertificateValue + ";";
+        }
+
+        private void sqlAuth_Checked(object sender, RoutedEventArgs e)
+        {
+            sqlAuthPanel.Visibility = Visibility.Visible;
+            windwosAuthPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void windowsAuth_Checked(object sender, RoutedEventArgs e)
+        {
+            sqlAuthPanel.Visibility = Visibility.Collapsed;
+            windwosAuthPanel.Visibility = Visibility.Visible;
+        }
+
+        private void sourseDatabase_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            LocalDatabase = sourseDatabase.Text;
+            connectionString = "Data Source=localhost;Initial Catalog=" + LocalDatabase + ";TrustServerCertificate=True;Integrated Security=True;";
         }
     }
 }
