@@ -14,7 +14,7 @@ namespace WorkStation
     {
         private string CurrentSkill() => (SkillBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Experienced";
         string connectionString = ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
-
+        private string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
 
         private const double BaseSec = 60.0;  // experienced baseline
         private const double Jitter = 10.0;  // ±10%
@@ -88,18 +88,16 @@ namespace WorkStation
 
             using var conn = new SqlConnection(connectionString);
             await conn.OpenAsync();
-
             using var tx = conn.BeginTransaction();
 
             try
             {
+                getQuantity();
                 //  decrement parts (proc returns single cell 'OK' or 'OUT_OF_STOCK')
-                using (var cmd = new SqlCommand("dbo.DecrementPartCount", conn, tx))
+                using (SqlCommand command = new SqlCommand("DecrementPartCount", conn))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    var obj = await cmd.ExecuteScalarAsync();
-                    var status = (obj == null || obj == DBNull.Value) ? "ERR" : obj.ToString();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.ExecuteNonQuery();
                 }
 
                 //  create assembly in the SAME transaction
@@ -114,6 +112,8 @@ namespace WorkStation
 
 
                 LogList.Items.Insert(0, $"Start → OK, Assembly #{assemblyId}, Cycle={simulationCyle:0.##}s (TS={timeScale:0.##}x)");
+
+                getQuantity();
 
                 await Task.Delay(waitMs);
 
@@ -182,6 +182,42 @@ namespace WorkStation
                 LogList.Items.Insert(0, "DB ERROR (Start): " + ex.Message);
             }
         }
+
+        private void getQuantity()
+        {
+            string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            string log = ""; 
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                using var command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@desc", parts[i]);
+
+                try
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            log += $"Part: {parts[i]}. Quantity: {reader["binCapacity"] } | ";
+                        }
+                        else
+                        {
+                            LogList.Items.Insert(0, "No matching config found.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogList.Items.Insert(0, ex.Message);
+                }
+            }
+            LogList.Items.Insert(0, log);
+        }
+
 
     }
 }
