@@ -22,6 +22,7 @@ namespace WorkStation
         private string? connectionString = "Data Source=localhost;Initial Catalog=advsql-milestone-2;Integrated Security=True;TrustServerCertificate=True;";
         private SqlDataAdapter adapter = new SqlDataAdapter();
         private DataTable dataTable = new DataTable();
+        private string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
         SqlConnection connection = new SqlConnection();
         public MainWindow()
         {
@@ -47,6 +48,7 @@ namespace WorkStation
                 connectionButton.Visibility= Visibility.Hidden;
                 onlineStatus.Visibility = Visibility.Visible;
                 easyConnect.Visibility = Visibility.Hidden;
+                StartStation.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -55,7 +57,7 @@ namespace WorkStation
         }
 
 
-        private void read_quantity(string partName)
+        private string read_quantity(string partName)
         {
             string query = "SELECT value FROM APP_CONFIG WHERE configDescription = @desc";
 
@@ -68,12 +70,42 @@ namespace WorkStation
                 {
                     if (reader.Read())
                     {
-                        MessageBox.Show($"Quantity: {reader["value"]}");
+                        //MessageBox.Show($"Quantity: {reader["value"]}");
+                        return reader["value"].ToString();
                     }
                     else
                     {
                         MessageBox.Show("No matching config found.");
                     }
+                }
+                return "null";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return "null";
+            }
+        }
+
+        private void callProcedure(string procName, int stationID, int partID, string partName)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand command = new SqlCommand(procName, conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    // parameters for the stored procedure
+                    command.Parameters.AddWithValue("@StationID", stationID);
+                    command.Parameters.AddWithValue("@PartID", partID);
+
+                    conn.Open();
+                    command.ExecuteNonQuery();
+
+                    string quantity = read_quantity(partName);
+
+                    MessageBox.Show($"Used a {partName} from the bin\n Parts left: {quantity}");
                 }
             }
             catch (Exception ex)
@@ -90,6 +122,18 @@ namespace WorkStation
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
             test_connection();
+        }
+
+        private async void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartStation.Content = "Running...";
+            await Task.Delay(2000);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                callProcedure("DecrementPartCount", i, i, parts[i]);
+
+                await Task.Delay(5000);
+            }
         }
     }
 }
