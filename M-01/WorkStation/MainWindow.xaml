@@ -5,8 +5,56 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WorkStation"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="A-03 Programming Abstractions"
+        Height="650"
+        Width="1020"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E2F"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <!-- Primary button style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0078D7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Resources>
+
+
     <Grid>
+        <TextBlock Text="M-2 Assembly Simulation"
+               FontSize="18"
+               FontWeight="Bold"
+               Foreground="White"
+               HorizontalAlignment="Center"
+               Margin="0,20,0,0"
+               Grid.Row="0"/>
+
+        <TextBlock Text="Online 🟢"
+                Name="onlineStatus"
+                Visibility="Hidden"
+               FontSize="12" 
+               FontWeight="Bold"
+               Foreground="#FF1CB133"
+               HorizontalAlignment="Left"
+               Margin="50,20,0,0"
+               Grid.Row="0"/>
+
+        <TextBlock Text="LENS BIN"
+               FontSize="18"
+               FontWeight="Bold"
+               Foreground="White"
+               HorizontalAlignment="Left"
+               Margin="27,68,0,-48"
+               Grid.Row="0"/>
+
+        <Button Content="Connect" Name="connectionButton" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="885,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="ApplyButton_Click"/>
+        <Button Content="Check" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="27,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="Button_Click"/>
+        <CheckBox Name="easyConnect" Content="Easy Connect" HorizontalAlignment="Left" Margin="40,43,0,0" VerticalAlignment="Top" Foreground="#FFF7F7F7"/>
 
     </Grid>
 </Window>
