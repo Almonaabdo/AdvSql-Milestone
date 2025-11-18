@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using Microsoft.Data.SqlClient;
 using System;
 using System.Configuration;
 using System.Data;
@@ -7,14 +6,14 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Data.SqlClient;
 using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
 namespace WorkStation
 {
-
-
     public partial class MainWindow : Window
     {
+        // ------------- Nested types -------------
 
         private sealed class Worker
         {
@@ -25,199 +24,30 @@ namespace WorkStation
             public override string ToString() => $"Worker {WorkerId} ({Skill})";
         }
 
+        // ------------- Fields & constants -------------
+
+        private readonly string connectionString =
+            ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
+
+        private readonly string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
+
+        private const double BaseSec = 60.0;  // experienced baseline (seconds)
+        private const double Jitter = 10.0;  // ±10%
+
         private readonly Random _rng = new Random();
         private bool _isRunning;
-        private int _cycleNumber = 0;   // counts assemblies this session
+        private int _cycleNumber;            // counts assemblies this session
 
-        private void LogEvent(string message)
-        {
-            string stamp = DateTime.Now.ToString("HH:mm:ss");
-            LogList.Items.Insert(0, $"[{stamp}] {message}");
-        }
-
-        private Worker CurrentWorker()
-        {
-            if (WorkerBox.SelectedItem is Worker w)
-                return w;
-
-            throw new InvalidOperationException("No worker selected.");
-        }
-
-        private int CurrentWorkerId() => CurrentWorker().WorkerId;
-
-        private string CurrentSkill()
-        {
-            var skill = CurrentWorker().Skill;
-            return string.IsNullOrWhiteSpace(skill) ? "Experienced" : skill;
-        }
-
-
-        string connectionString = ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
-        private string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
-
-        private const double BaseSec = 60.0;  // experienced baseline
-        private const double Jitter = 10.0;  // ±10%
+        // ------------- Constructor -------------
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private static double SkillFactor(string skill) => skill switch
-        {
-            "Rookie" => 1.50,   // 50% longer
-            "Super" => 0.85,   // 15% faster
-            _ => 1.00    // Experienced/default
-        };
+        // ------------- Event handlers -------------
 
-        private async Task<double> GetTimeScale()
-        {
-            const string sql = @"SELECT CAST(value AS float) FROM dbo.APP_CONFIG
-                         WHERE configType='System' AND configDescription='TimeScale'";
-            using var conn = new SqlConnection(connectionString);
-            using var cmd = new SqlCommand(sql, conn);
-            await conn.OpenAsync();
-            var o = await cmd.ExecuteScalarAsync();
-            return (o == null || o == DBNull.Value) ? 1.0 : Convert.ToDouble(o);
-        }
-
-        // Compute a single simulated cycle time (seconds)
-        private double calcSimulationCycle(string skill)
-        {
-            double jitter = (_rng.NextDouble() * 2 - 1) * (Jitter / 100.0);
-            return BaseSec * SkillFactor(skill) * (1.0 + jitter);
-        }
-
-
-        private static async Task<int> CreateAssembly(SqlConnection conn, SqlTransaction tx, int stationId, int workerId)
-        {
-            const string sql = @"
-INSERT INTO dbo.APP_ASSEMBLY (StationID, WorkerID)
-OUTPUT INSERTED.AssemblyID
-VALUES (@StationID, @WorkerID);";
-
-            using var cmd = new SqlCommand(sql, conn, tx);
-            cmd.Parameters.Add("@StationID", SqlDbType.Int).Value = stationId;
-            cmd.Parameters.Add("@WorkerID", SqlDbType.Int).Value = workerId;
-
-            var obj = await cmd.ExecuteScalarAsync();
-            return (obj is int id) ? id : Convert.ToInt32(obj);
-        }
-
-        private async Task FinishAssembly(int assemblyId, bool fail)
-        {
-                const string sql = @"
-                UPDATE dbo.APP_ASSEMBLY
-                SET FinishedAt = SYSUTCDATETIME(),
-                    Result     = @res
-                WHERE AssemblyID = @id;";
-
-            using var conn = new SqlConnection(connectionString);
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@res", SqlDbType.Char, 1).Value = fail ? "F" : "P";
-            cmd.Parameters.Add("@id", SqlDbType.Int).Value = assemblyId;
-
-            await conn.OpenAsync();
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-
-
-
-
-        private async Task StartAssembly()
-        {
-            int stationId = int.TryParse(StationIdBox.Text, out var sid) ? sid : 1;
-            int workerId = CurrentWorkerId();
-            string skill = CurrentSkill();
-
-            using var conn = new SqlConnection(connectionString);
-            await conn.OpenAsync();
-            using var tx = conn.BeginTransaction();
-
-            try
-            {
-                _cycleNumber++;
-                getQuantity();
-
-                using (var command = new SqlCommand("DecrementPartCount", conn, tx))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    await command.ExecuteNonQueryAsync();
-
-                }
-
-                int assemblyId = await CreateAssembly(conn, tx, stationId, workerId);
-                tx.Commit();
-
-                double simulationCycle = calcSimulationCycle(skill);
-                double timeScale = await GetTimeScale();
-                int waitMs = (int)Math.Round(
-                    (simulationCycle / Math.Max(0.0001, timeScale)) * 1000.0
-                );
-
-                LogEvent(
-                            $"Cycle {_cycleNumber}: START – Assembly #{assemblyId}, Worker {CurrentWorker()}, " +
-                            $"Duration ≈ {simulationCycle:0.##}s @ {timeScale:0.##}x");
-
-
-
-                getQuantity();
-
-                await Task.Delay(waitMs);
-
-                double defect = skill switch
-                {
-                    "Rookie" => 0.0085,
-                    "Super" => 0.0015,
-                    _ => 0.0050
-                };
-
-                bool fail = _rng.NextDouble() < defect;
-
-                await FinishAssembly(assemblyId, fail);
-                LogEvent(
-                        $"Cycle {_cycleNumber}: DONE – Assembly #{assemblyId} " +
-                        $"{(fail ? " FAIL" : "GOOD")}");
-
-
-            }
-            catch (Exception ex)
-            {
-                try { tx.Rollback(); } catch { }
-                LogEvent("DB ERROR (Start): " + ex.Message);
-            }
-        }
-
-
-
-
-        // for this instance, call proc to create station, seed bins 
-        private async Task<int> StationForThisInstance()
-        {
-
-            using var conn = new SqlConnection(connectionString);
-            using var cmd = new SqlCommand("dbo.usp_CreateStationWithBins", conn)
-            { CommandType = CommandType.StoredProcedure };
-
-            await conn.OpenAsync();
-            using var r = await cmd.ExecuteReaderAsync();
-            if (!await r.ReadAsync()) throw new InvalidOperationException("No station returned.");
-
-            int stationId = r.GetInt32(0);
-            string code = r.GetString(1);
-
-            StationIdBox.Text = stationId.ToString();
-            LogEvent($"Auto-created {code} (ID {stationId}) and seeded bins.");
-
-            await LoadWorkers();   // <── load combo here
-
-            return stationId;
-        }
-
-
-        // upon window starting call method
+        // Window loaded → get timescale and auto-create station + bins
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -230,11 +60,6 @@ VALUES (@StationID, @WorkerID);";
             {
                 LogEvent("DB ERROR (auto-station on load): " + ex.Message);
             }
-        }
-
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            _isRunning = false;
         }
 
         private async void StartBtn_Click(object sender, RoutedEventArgs e)
@@ -277,50 +102,97 @@ VALUES (@StationID, @WorkerID);";
             }
         }
 
-
-        private void getQuantity()
+        private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
+            _isRunning = false;
+        }
 
-            string log = "Parts remaining – ";
+        // ------------- High-level helpers -------------
 
-            for (int i = 0; i < parts.Length; i++)
-            {
-                using var command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@desc", parts[i]);
+        private void LogEvent(string message)
+        {
+            string stamp = DateTime.Now.ToString("HH:mm:ss");
+            LogList.Items.Insert(0, $"[{stamp}] {message}");
+        }
 
-                try
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            log += $"Part: {parts[i]}. Quantity: {reader["binCapacity"] } | ";
-                        }
-                        else
-                        {
-                            LogList.Items.Insert(0, "No matching config found.");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogEvent("Error reading part quantity: " + ex.Message);
-                }
-            }
-            LogEvent(log);
+        private static double SkillFactor(string skill) => skill switch
+        {
+            "Rookie" => 1.50,   // 50% longer
+            "Super" => 0.85,   // 15% faster
+            _ => 1.00    // Experienced/default
+        };
+
+        // Compute a single simulated cycle time (seconds)
+        private double CalcSimulationCycle(string skill)
+        {
+            double jitter = (_rng.NextDouble() * 2 - 1) * (Jitter / 100.0);
+            return BaseSec * SkillFactor(skill) * (1.0 + jitter);
+        }
+
+        private Worker CurrentWorker()
+        {
+            if (WorkerBox.SelectedItem is Worker w)
+                return w;
+
+            throw new InvalidOperationException("No worker selected.");
+        }
+
+        private int CurrentWorkerId() => CurrentWorker().WorkerId;
+
+        private string CurrentSkill()
+        {
+            var skill = CurrentWorker().Skill;
+            return string.IsNullOrWhiteSpace(skill) ? "Experienced" : skill;
+        }
+
+        // ------------- DB helpers (config / station / workers) -------------
+
+        private async Task<double> GetTimeScale()
+        {
+            const string sql = @"
+SELECT CAST(value AS float)
+FROM dbo.APP_CONFIG
+WHERE configType = 'System'
+  AND configDescription = 'TimeScale';";
+
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand(sql, conn);
+            await conn.OpenAsync();
+            var o = await cmd.ExecuteScalarAsync();
+            return (o == null || o == DBNull.Value) ? 1.0 : Convert.ToDouble(o);
+        }
+
+        // For this app instance, call proc to create station and seed bins
+        private async Task<int> StationForThisInstance()
+        {
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("dbo.usp_CreateStationWithBins", conn)
+            { CommandType = CommandType.StoredProcedure };
+
+            await conn.OpenAsync();
+            using var r = await cmd.ExecuteReaderAsync();
+            if (!await r.ReadAsync())
+                throw new InvalidOperationException("No station returned.");
+
+            int stationId = r.GetInt32(0);
+            string code = r.GetString(1);
+
+            StationIdBox.Text = stationId.ToString();
+            LogEvent($"Auto-created {code} (ID {stationId}) and seeded bins.");
+
+            await LoadWorkers();   // load workers into combo
+
+            return stationId;
         }
 
         private async Task LoadWorkers()
         {
-            var workers = new List<Worker>();
+            var workers = new System.Collections.Generic.List<Worker>();
 
             const string sql = @"
-        SELECT WorkerID, StationID, Skill
-        FROM dbo.APP_WORKER
-        ORDER BY WorkerID;";
+SELECT WorkerID, StationID, Skill
+FROM dbo.APP_WORKER
+ORDER BY WorkerID;";
 
             using var conn = new SqlConnection(connectionString);
             using var cmd = new SqlCommand(sql, conn);
@@ -338,6 +210,140 @@ VALUES (@StationID, @WorkerID);";
             }
 
             WorkerBox.ItemsSource = workers;
+        }
+
+        // ------------- DB helpers (assembly / parts) -------------
+
+        private static async Task<int> CreateAssembly(
+            SqlConnection conn,
+            SqlTransaction tx,
+            int stationId,
+            int workerId)
+        {
+            const string sql = @"
+INSERT INTO dbo.APP_ASSEMBLY (StationID, WorkerID)
+OUTPUT INSERTED.AssemblyID
+VALUES (@StationID, @WorkerID);";
+
+            using var cmd = new SqlCommand(sql, conn, tx);
+            cmd.Parameters.Add("@StationID", SqlDbType.Int).Value = stationId;
+            cmd.Parameters.Add("@WorkerID", SqlDbType.Int).Value = workerId;
+
+            var obj = await cmd.ExecuteScalarAsync();
+            return (obj is int id) ? id : Convert.ToInt32(obj);
+        }
+
+        private async Task FinishAssembly(int assemblyId, bool fail)
+        {
+            const string sql = @"
+UPDATE dbo.APP_ASSEMBLY
+SET FinishedAt = SYSUTCDATETIME(),
+    Result     = @res
+WHERE AssemblyID = @id;";
+
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@res", SqlDbType.Char, 1).Value = fail ? "F" : "P";
+            cmd.Parameters.Add("@id", SqlDbType.Int).Value = assemblyId;
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        private void GetQuantity()
+        {
+            const string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
+
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            string logPrefix = "Parts remaining – ";
+            string log = logPrefix;
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                using var command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@desc", parts[i]);
+
+                try
+                {
+                    using SqlDataReader reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        if (log.Length > logPrefix.Length)
+                            log += " | ";
+
+                        log += $"{parts[i]}: {reader["binCapacity"]}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogEvent("Error reading part quantity: " + ex.Message);
+                }
+            }
+
+            LogEvent(log);
+        }
+
+        // ------------- Core simulation (one cycle) -------------
+
+        private async Task StartAssembly()
+        {
+            int stationId = int.TryParse(StationIdBox.Text, out var sid) ? sid : 1;
+            int workerId = CurrentWorkerId();
+            string skill = CurrentSkill();
+
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+            using var tx = conn.BeginTransaction();
+
+            try
+            {
+                _cycleNumber++;
+                GetQuantity();
+
+                using (var command = new SqlCommand("DecrementPartCount", conn, tx))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                int assemblyId = await CreateAssembly(conn, tx, stationId, workerId);
+                tx.Commit();
+
+                double simulationCycle = CalcSimulationCycle(skill);
+                double timeScale = await GetTimeScale();
+                int waitMs = (int)Math.Round(
+                    (simulationCycle / Math.Max(0.0001, timeScale)) * 1000.0
+                );
+
+                LogEvent(
+                    $"Cycle {_cycleNumber}: START – Assembly #{assemblyId}, Worker {CurrentWorker()}, " +
+                    $"Duration ≈ {simulationCycle:0.##}s @ {timeScale:0.##}x");
+
+                GetQuantity();
+
+                await Task.Delay(waitMs);
+
+                double defect = skill switch
+                {
+                    "Rookie" => 0.0085,
+                    "Super" => 0.0015,
+                    _ => 0.0050
+                };
+
+                bool fail = _rng.NextDouble() < defect;
+
+                await FinishAssembly(assemblyId, fail);
+                LogEvent(
+                    $"Cycle {_cycleNumber}: DONE – Assembly #{assemblyId} " +
+                    $"{(fail ? "FAIL" : "GOOD")}");
+            }
+            catch (Exception ex)
+            {
+                try { tx.Rollback(); } catch { /* ignore rollback failures */ }
+                LogEvent("DB ERROR (Start): " + ex.Message);
+            }
         }
     }
 }
