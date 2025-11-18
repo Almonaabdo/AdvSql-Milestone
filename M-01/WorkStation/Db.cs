@@ -28,5 +28,7 @@ namespace WorkStation
             if (obj == null || obj == System.DBNull.Value) return 5; // safe default
             return (int)obj;
         }
+
+
     }
 }
