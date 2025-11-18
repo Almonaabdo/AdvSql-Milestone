@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SqlDataAdapter = Microsoft.Data.SqlClient.SqlDataAdapter;
+using System;
 
 namespace WorkStation
 {
@@ -64,7 +65,7 @@ namespace WorkStation
 
         private string read_quantity(string partName)
         {
-            string query = "SELECT value FROM APP_CONFIG WHERE configDescription = @desc";
+            string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
 
             SqlCommand command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@desc", partName);
@@ -76,7 +77,7 @@ namespace WorkStation
                     if (reader.Read())
                     {
                         //MessageBox.Show($"Quantity: {reader["value"]}");
-                        return reader["value"].ToString();
+                        return reader["binCapacity"].ToString();
                     }
                     else
                     {
@@ -102,8 +103,8 @@ namespace WorkStation
                     command.CommandType = CommandType.StoredProcedure;
 
                     // parameters for the stored procedure
-                    command.Parameters.AddWithValue("@StationID", stationID);
-                    command.Parameters.AddWithValue("@PartID", partID);
+                    //command.Parameters.AddWithValue("@StationID", stationID);
+                    //command.Parameters.AddWithValue("@PartID", partID);
 
                     conn.Open();
                     command.ExecuteNonQuery();
@@ -119,10 +120,26 @@ namespace WorkStation
             }
         }
 
-        private void finalizeAssembly(int stationId, int workerId, DateTime startTime, char result)
+        private void finalizeAssembly(int stationId, int workerId, DateTime startTime)
         {
+            Random rand = new Random();
+
+            int number = rand.Next(1, 101);
+            char result;
+
+            // 20% random chance of the part failing
+            if (number >= 1 && number <= 21)
+            {
+                result = 'F';
+            }
+            else 
+            {
+                result = 'P';
+            }
+
             try
             {
+
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
@@ -153,7 +170,7 @@ namespace WorkStation
         private async void startButton_Click(object sender, RoutedEventArgs e)
         {
             StartStation.Content = "Running...";
-            finalizeAssembly(1, 10, DateTime.Now, 'P');
+            finalizeAssembly(1, 10, DateTime.Now);
             await Task.Delay(2000);
             for (int i = 0; i < parts.Length; i++)
             {
