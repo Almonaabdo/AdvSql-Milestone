@@ -13,8 +13,6 @@ namespace WorkStation
 {
     public partial class MainWindow : Window
     {
-        // ------------- Nested types -------------
-
         private sealed class Worker
         {
             public int WorkerId { get; set; }
@@ -24,7 +22,6 @@ namespace WorkStation
             public override string ToString() => $"Worker {WorkerId} ({Skill})";
         }
 
-        // ------------- Fields & constants -------------
 
         private readonly string connectionString =
             ConfigurationManager.ConnectionStrings["advsql"]!.ConnectionString;
