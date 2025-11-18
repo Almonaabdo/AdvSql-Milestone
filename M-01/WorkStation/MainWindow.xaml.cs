@@ -94,10 +94,10 @@ namespace WorkStation
             {
                 getQuantity();
                 //  decrement parts (proc returns single cell 'OK' or 'OUT_OF_STOCK')
-                using (SqlCommand command = new SqlCommand("DecrementPartCount", conn))
+                using (SqlCommand command = new SqlCommand("DecrementPartCount", conn, tx))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                 }
 
                 //  create assembly in the SAME transaction
