@@ -55,6 +55,6 @@
         <Button Content="Connect" Name="connectionButton" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="885,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="ApplyButton_Click"/>
         <Button Visibility="Hidden" Content="Check" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="27,225,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="Button_Click"/>
         <CheckBox Name="easyConnect" Content="Easy Connect" HorizontalAlignment="Left" Margin="909,68,0,0" VerticalAlignment="Top" Foreground="#FFF7F7F7"/>
-        <Button Content="Start Station" x:Name="StartStation" Style="{StaticResource PrimaryButtonStyle}" Visibility="Hidden" HorizontalAlignment="Center" Margin="0,134,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="startButton_Click"/>
+        <Button Content="Start Station" x:Name="StartStation" Style="{StaticResource PrimaryButtonStyle}"  HorizontalAlignment="Center" Margin="0,134,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.789,-0.371" Height="48" Width="114" Click="startButton_Click"/>
     </Grid>
 </Window>

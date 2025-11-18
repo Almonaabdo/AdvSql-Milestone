@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.VisualBasic;
 using System.Data;
 using System.Text;
 using System.Windows;
@@ -24,6 +25,10 @@ namespace WorkStation
         private DataTable dataTable = new DataTable();
         private string[] parts = { "Housing", "Reflector", "Harness", "Bulb", "Lens", "Bezel" };
         SqlConnection connection = new SqlConnection();
+        DateTime startedAt = DateTime.Now;
+        DateTime finishedAt = DateTime.Now;
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -114,6 +119,50 @@ namespace WorkStation
             }
         }
 
+        private void finalizeAssembly(int stationId, int workerId, DateTime startTime, char result)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                        INSERT INTO APP_ASSEMBLY (StationID, WorkerID, StartedAt, FinishedAt, Result)
+                        VALUES (@StationID, @WorkerID, @StartedAt, @FinishedAt, @Result);
+                    ";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@StationID", stationId);
+                        cmd.Parameters.AddWithValue("@WorkerID", workerId);
+                        cmd.Parameters.AddWithValue("@StartedAt", startTime);
+                        cmd.Parameters.AddWithValue("@FinishedAt", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@Result", result); 
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
+        private async void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartStation.Content = "Running...";
+            finalizeAssembly(1, 10, DateTime.Now, 'P');
+            await Task.Delay(2000);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                callProcedure("DecrementPartCount", i, i, parts[i]);
+
+                await Task.Delay(5000);
+            }
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             read_quantity("Lens");
@@ -122,18 +171,6 @@ namespace WorkStation
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
             test_connection();
-        }
-
-        private async void startButton_Click(object sender, RoutedEventArgs e)
-        {
-            StartStation.Content = "Running...";
-            await Task.Delay(2000);
-            for (int i = 0; i < parts.Length; i++)
-            {
-                callProcedure("DecrementPartCount", i, i, parts[i]);
-
-                await Task.Delay(5000);
-            }
         }
     }
 }
