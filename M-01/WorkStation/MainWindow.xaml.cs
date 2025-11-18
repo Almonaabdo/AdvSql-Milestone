@@ -35,16 +35,13 @@ namespace WorkStation
         private bool _isRunning;
         private int _cycleNumber;            // counts assemblies this session
 
-        // ------------- Constructor -------------
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        // ------------- Event handlers -------------
 
-        // Window loaded → get timescale and auto-create station + bins
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -104,8 +101,6 @@ namespace WorkStation
             _isRunning = false;
         }
 
-        // ------------- High-level helpers -------------
-
         private void LogEvent(string message)
         {
             string stamp = DateTime.Now.ToString("HH:mm:ss");
@@ -119,7 +114,6 @@ namespace WorkStation
             _ => 1.00    // Experienced/default
         };
 
-        // Compute a single simulated cycle time (seconds)
         private double CalcSimulationCycle(string skill)
         {
             double jitter = (_rng.NextDouble() * 2 - 1) * (Jitter / 100.0);
@@ -142,7 +136,6 @@ namespace WorkStation
             return string.IsNullOrWhiteSpace(skill) ? "Experienced" : skill;
         }
 
-        // ------------- DB helpers (config / station / workers) -------------
 
         private async Task<double> GetTimeScale()
         {
@@ -159,7 +152,6 @@ WHERE configType = 'System'
             return (o == null || o == DBNull.Value) ? 1.0 : Convert.ToDouble(o);
         }
 
-        // For this app instance, call proc to create station and seed bins
         private async Task<int> StationForThisInstance()
         {
             using var conn = new SqlConnection(connectionString);
@@ -209,7 +201,6 @@ ORDER BY WorkerID;";
             WorkerBox.ItemsSource = workers;
         }
 
-        // ------------- DB helpers (assembly / parts) -------------
 
         private static async Task<int> CreateAssembly(
             SqlConnection conn,
@@ -282,7 +273,6 @@ WHERE AssemblyID = @id;";
             LogEvent(log);
         }
 
-        // ------------- Core simulation (one cycle) -------------
 
         private async Task StartAssembly()
         {
