@@ -1,4 +1,10 @@
-﻿#nullable enable
+﻿/*
+ * File : MainWindow.xaml.cs
+ * Developers: Yafet Tekleab, Abdurrahman Almouna
+ * Overview: UI for the database simulation based application, allows to select worker and start or stop assembly. logs most important logs. Connection to the database can be changed from App.config
+ */
+
+#nullable enable
 using System;
 using System.Configuration;
 using System.Data;
@@ -101,6 +107,11 @@ namespace WorkStation
             _isRunning = false;
         }
 
+
+        /*
+         * Method : LogEvent()
+         * Overview: Logs event to the UI with added timestaps for better details
+         */
         private void LogEvent(string message)
         {
             string stamp = DateTime.Now.ToString("HH:mm:ss");
@@ -140,10 +151,10 @@ namespace WorkStation
         private async Task<double> GetTimeScale()
         {
             const string sql = @"
-SELECT CAST(value AS float)
-FROM dbo.APP_CONFIG
-WHERE configType = 'System'
-  AND configDescription = 'TimeScale';";
+            SELECT CAST(value AS float)
+            FROM dbo.APP_CONFIG
+            WHERE configType = 'System'
+              AND configDescription = 'TimeScale';";
 
             using var conn = new SqlConnection(connectionString);
             using var cmd = new SqlCommand(sql, conn);
@@ -179,9 +190,9 @@ WHERE configType = 'System'
             var workers = new System.Collections.Generic.List<Worker>();
 
             const string sql = @"
-SELECT WorkerID, StationID, Skill
-FROM dbo.APP_WORKER
-ORDER BY WorkerID;";
+            SELECT WorkerID, StationID, Skill
+            FROM dbo.APP_WORKER
+            ORDER BY WorkerID;";
 
             using var conn = new SqlConnection(connectionString);
             using var cmd = new SqlCommand(sql, conn);
@@ -209,9 +220,9 @@ ORDER BY WorkerID;";
             int workerId)
         {
             const string sql = @"
-INSERT INTO dbo.APP_ASSEMBLY (StationID, WorkerID)
-OUTPUT INSERTED.AssemblyID
-VALUES (@StationID, @WorkerID);";
+            INSERT INTO dbo.APP_ASSEMBLY (StationID, WorkerID)
+            OUTPUT INSERTED.AssemblyID
+            VALUES (@StationID, @WorkerID);";
 
             using var cmd = new SqlCommand(sql, conn, tx);
             cmd.Parameters.Add("@StationID", SqlDbType.Int).Value = stationId;
@@ -224,10 +235,10 @@ VALUES (@StationID, @WorkerID);";
         private async Task FinishAssembly(int assemblyId, bool fail)
         {
             const string sql = @"
-UPDATE dbo.APP_ASSEMBLY
-SET FinishedAt = SYSUTCDATETIME(),
-    Result     = @res
-WHERE AssemblyID = @id;";
+            UPDATE dbo.APP_ASSEMBLY
+            SET FinishedAt = SYSUTCDATETIME(),
+                Result     = @res
+            WHERE AssemblyID = @id;";
 
             using var conn = new SqlConnection(connectionString);
             using var cmd = new SqlCommand(sql, conn);
@@ -238,6 +249,11 @@ WHERE AssemblyID = @id;";
             await cmd.ExecuteNonQueryAsync();
         }
 
+
+        /*
+         * Method : GetQuantity()
+         * Overview: fetches bin capacity from the database and prints the value to to the UI
+         */
         private void GetQuantity()
         {
             const string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
@@ -258,10 +274,15 @@ WHERE AssemblyID = @id;";
                     using SqlDataReader reader = command.ExecuteReader();
                     if (reader.Read())
                     {
+                        int binCapacity = Convert.ToInt32(reader["binCapacity"]);
                         if (log.Length > logPrefix.Length)
                             log += " | ";
 
-                        log += $"{parts[i]}: {reader["binCapacity"]}";
+                        log += $"{parts[i]}: {binCapacity}";
+                        if (binCapacity <= 5)
+                        {
+                            LogEvent($"{parts[i]} bin is almost empty. Refilling now!");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -273,7 +294,10 @@ WHERE AssemblyID = @id;";
             LogEvent(log);
         }
 
-
+        /*
+         * Method : StartAssembly()
+         * Overview: generates stationID, assigns worker to station, and starts the assembly by getting the quantity first and then calls procedure to decrement parts by 1 and starts simulation
+         */
         private async Task StartAssembly()
         {
             int stationId = int.TryParse(StationIdBox.Text, out var sid) ? sid : 1;

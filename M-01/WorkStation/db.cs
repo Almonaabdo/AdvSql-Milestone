@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * File : db.cs
+ * Developers: Yafet Tekleab, Abdurrahman Almouna
+ */
+
+
+using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Configuration;
