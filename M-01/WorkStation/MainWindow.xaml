@@ -25,7 +25,7 @@
             <TextBlock Text="Station ID:" VerticalAlignment="Center" />
             <TextBox x:Name="StationIdBox"
                      Width="60" Margin="4,0,16,0"
-                     ToolTip="Numeric station identifier for this simulator." />
+                     ToolTip="Numeric station identifier for this simulator." IsReadOnly="True" />
 
             <TextBlock Text="Worker:" VerticalAlignment="Center" />
             <ComboBox x:Name="WorkerBox"
@@ -69,7 +69,7 @@
                        VerticalAlignment="Center"/>
         </StackPanel>
 
-        <!-- ===== Bottom row: Event log ===== -->
+        <!-- Bottom row: Event log-->
         <GroupBox Grid.Row="2" Grid.ColumnSpan="2"
                   Header="Event log (latest at top)"
                   Margin="0">

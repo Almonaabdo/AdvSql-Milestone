@@ -251,50 +251,6 @@ namespace WorkStation
 
 
         /*
-         * Method : GetQuantity()
-         * Overview: fetches bin capacity from the database and prints the value to to the UI
-         */
-        private void GetQuantity()
-        {
-            const string query = "SELECT binCapacity FROM APP_PART WHERE Name = @desc";
-
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-
-            string logPrefix = "Parts remaining – ";
-            string log = logPrefix;
-
-            for (int i = 0; i < parts.Length; i++)
-            {
-                using var command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@desc", parts[i]);
-
-                try
-                {
-                    using SqlDataReader reader = command.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        int binCapacity = Convert.ToInt32(reader["binCapacity"]);
-                        if (log.Length > logPrefix.Length)
-                            log += " | ";
-
-                        log += $"{parts[i]}: {binCapacity}";
-                        if (binCapacity <= 5)
-                        {
-                            LogEvent($"{parts[i]} bin is almost empty. Refilling now!");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogEvent("Error reading part quantity: " + ex.Message);
-                }
-            }
-
-            LogEvent(log);
-        }
-
-        /*
          * Method : StartAssembly()
          * Overview: generates stationID, assigns worker to station, and starts the assembly by getting the quantity first and then calls procedure to decrement parts by 1 and starts simulation
          */
@@ -311,7 +267,6 @@ namespace WorkStation
             try
             {
                 _cycleNumber++;
-                GetQuantity();
 
                 using (var command = new SqlCommand("DecrementPartCount", conn, tx))
                 {
@@ -329,10 +284,8 @@ namespace WorkStation
                 );
 
                 LogEvent(
-                    $"Cycle {_cycleNumber}: START – Assembly #{assemblyId}, Worker {CurrentWorker()}, " +
+                    $"Cycle {_cycleNumber}: START – Assembly #{assemblyId}, {CurrentWorker()}, " +
                     $"Duration ≈ {simulationCycle:0.##}s @ {timeScale:0.##}x");
-
-                GetQuantity();
 
                 await Task.Delay(waitMs);
 
