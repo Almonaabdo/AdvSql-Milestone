@@ -44,7 +44,7 @@
                     Click="StartBtn_Click" />
             <Button x:Name="StopBtn"
                     Content="Stop"
-                    Width="80"
+                    Width="84"
                     IsEnabled="False"
                     Click="StopButton_Click" />
         </StackPanel>

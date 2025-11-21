@@ -104,6 +104,8 @@ namespace WorkStation
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
+            StopBtn.Content = "Stopping...";
+            StopBtn.IsEnabled = false;
             _isRunning = false;
         }
 
