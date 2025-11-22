@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Andon"
         mc:Ignorable="d"
-        Title="Andon Display" Height="450" Width="800" Background="#FF1E1E1E">
+        Title="Andon Display" Height="465" Width="813" Background="#FF1E1E1E">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -14,13 +14,14 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Workstation Andon Display" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="0" Text="Station 1 Status : Running" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,35,0,5" HorizontalAlignment="Center" RenderTransformOrigin="-0.219,1.632"/>
 
         <UniformGrid Grid.Row="1" Columns="2" Rows="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" >
             <!-- Harness -->
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Harness" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbHarness" Height="25" Minimum="0" Maximum="55" Value="55"/>
+                    <ProgressBar x:Name="Harness" Height="25" Minimum="0" Maximum="100" Value="55"/>
                     <Ellipse x:Name="indHarness" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
@@ -29,7 +30,7 @@
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Reflector" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbReflector" Height="25" Minimum="0" Maximum="35" Value="20"/>
+                    <ProgressBar x:Name="Reflector" Height="25" Minimum="0" Maximum="100" Value="20"/>
                     <Ellipse x:Name="indReflector" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
@@ -38,7 +39,7 @@
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Housing" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbHousing" Height="25" Minimum="0" Maximum="24" Value="24"/>
+                    <ProgressBar x:Name="Housing" Height="25" Minimum="0" Maximum="100" Value="10"/>
                     <Ellipse x:Name="indHousing" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
@@ -47,7 +48,7 @@
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Lens" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbLens" Height="25" Minimum="0" Maximum="40" Value="40"/>
+                    <ProgressBar x:Name="Lens" Height="25" Minimum="0" Maximum="100" Value="40"/>
                     <Ellipse x:Name="indLens" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
@@ -56,7 +57,7 @@
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Bulb" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbBulb" Height="25" Minimum="0" Maximum="60" Value="60"/>
+                    <ProgressBar x:Name="Bulb" Height="25" Minimum="0" Maximum="100" Value="60"/>
                     <Ellipse x:Name="indBulb" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
@@ -65,11 +66,11 @@
             <Border Background="#FF2E2E2E" CornerRadius="10" Margin="10" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Bezel" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="pbBezel" Height="25" Minimum="0" Maximum="75" Value="75"/>
+                    <ProgressBar x:Name="Bezel" Height="25" Minimum="0" Maximum="100" Value="75"/>
                     <Ellipse x:Name="indBezel" Width="15" Height="15" Fill="Green" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
-            
+
         </UniformGrid>
     </Grid>
 </Window>
